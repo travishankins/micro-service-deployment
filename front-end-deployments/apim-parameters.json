@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "apimServiceName": {
+      "value": "myApimService"
+    },
+    "publisherEmail": {
+      "value": "publisher@example.com"
+    },
+    "publisherName": {
+      "value": "My Publisher"
+    },
+    "subnetResourceId": {
+      "value": "/subscriptions/0d6cd36e-b0b3-42a3-aeb3-040af23518ab/resourceGroups/myresourcegroup/providers/Microsoft.Network/virtualNetworks/test-vnet01/subnets/default"
+    },
+    "virtualNetworkType": {
+      "value": "External"
+    }
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Application Gateway."
+      }
+    },
+    "subnetResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the subnet where the Application Gateway will be deployed."
+      }
+    },
+    "privateIpAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The static private IP address for the Application Gateway."
+      }
+    },
+    "appServiceFqdn": {
+      "type": "string",
+      "metadata": {
+        "description": "The fully qualified domain name (FQDN) of the backend App Service."
+      }
+    },
+    "sslCertificateData": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The base64-encoded SSL certificate data."
+      }
+    },
+    "sslCertificatePassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the SSL certificate."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "apiVersion": "2020-11-01",
+      "name": "[parameters('appGatewayName')]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "sku": {
+          "name": "WAF_v2",
+          "tier": "WAF_v2",
+          "capacity": 2
+        },
+        "gatewayIPConfigurations": [
+          {
+            "name": "appGatewayIpConfig",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('subnetResourceId')]"
+              }
+            }
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "appGatewayPrivateIp",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('privateIpAddress')]",
+              "subnet": {
+                "id": "[parameters('subnetResourceId')]"
+              }
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "frontendPort",
+            "properties": {
+              "port": 443
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "appGatewayBackendPool",
+            "properties": {
+              "backendAddresses": [
+                {
+                  "fqdn": "[parameters('appServiceFqdn')]"
+                }
+              ]
+            }
+          }
+        ],
+        "backendHttpSettingsCollection": [
+          {
+            "name": "appGatewayBackendHttpSettings",
+            "properties": {
+              "port": 443,
+              "protocol": "Https",
+              "cookieBasedAffinity": "Disabled",
+              "pickHostNameFromBackendAddress": true,
+              "probeEnabled": true
+            }
+          }
+        ],
+        "httpListeners": [
+          {
+            "name": "appGatewayHttpsListener",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('appGatewayName'), 'appGatewayPrivateIp')]"
+              },
+              "frontendPort": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('appGatewayName'), 'frontendPort')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('appGatewayName'), 'sslCert')]"
+              }
+            }
+          }
+        ],
+        "sslCertificates": [
+          {
+            "name": "sslCert",
+            "properties": {
+              "data": "[parameters('sslCertificateData')]",
+              "password": "[parameters('sslCertificatePassword')]"
+            }
+          }
+        ],
+        "webApplicationFirewallConfiguration": {
+          "enabled": true,
+          "firewallMode": "Prevention",
+          "ruleSetType": "OWASP",
+          "ruleSetVersion": "3.2"
+        }
+      }
+    }
+  ]
+}

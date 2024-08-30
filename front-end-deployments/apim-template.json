@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "apimServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the API Management instance."
+      }
+    },
+    "publisherEmail": {
+      "type": "string",
+      "metadata": {
+        "description": "The email address of the publisher."
+      }
+    },
+    "publisherName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the publisher."
+      }
+    },
+    "subnetResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the subnet where APIM will be deployed."
+      }
+    },
+    "virtualNetworkType": {
+      "type": "string",
+      "allowedValues": ["None", "External", "Internal"],
+      "defaultValue": "Internal",
+      "metadata": {
+        "description": "The type of virtual network for the API Management service."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "[parameters('apimServiceName')]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "sku": {
+        "name": "Premium",
+        "capacity": 1
+      },
+      "properties": {
+        "publisherEmail": "[parameters('publisherEmail')]",
+        "publisherName": "[parameters('publisherName')]",
+        "virtualNetworkConfiguration": {
+          "subnetResourceId": "[parameters('subnetResourceId')]"
+        },
+        "virtualNetworkType": "[parameters('virtualNetworkType')]"
+      }
+    }
+  ]
+}

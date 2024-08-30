@@ -1,0 +1,117 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "frontDoorProfileName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Front Door profile."
+      }
+    },
+    "frontDoorEndpointName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Front Door endpoint."
+      }
+    },
+    "nvaPrivateIp": {
+      "type": "string",
+      "metadata": {
+        "description": "The private IP address or hostname of the Network Virtual Appliance (NVA)."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Cdn/profiles",
+      "apiVersion": "2020-09-01",
+      "name": "[parameters('frontDoorProfileName')]",
+      "location": "global",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "sku": {
+          "name": "Standard_AzureFrontDoor"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Cdn/profiles/endpoints",
+      "apiVersion": "2020-09-01",
+      "name": "[concat(parameters('frontDoorProfileName'), '/', parameters('frontDoorEndpointName'))]",
+      "location": "global",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "origins": [
+          {
+            "name": "nvaOrigin",
+            "properties": {
+              "hostName": "[parameters('nvaPrivateIp')]",
+              "httpPort": 80,
+              "httpsPort": 443,
+              "priority": 1,
+              "weight": 50,
+              "enabledState": "Enabled"
+            }
+          }
+        ],
+        "originGroups": [
+          {
+            "name": "originGroup",
+            "properties": {
+              "origins": [
+                {
+                  "name": "nvaOrigin",
+                  "properties": {
+                    "hostName": "[parameters('nvaPrivateIp')]",
+                    "httpPort": 80,
+                    "httpsPort": 443,
+                    "priority": 1,
+                    "weight": 50,
+                    "enabledState": "Enabled"
+                  }
+                }
+              ],
+              "healthProbeSettings": {
+                "probePath": "/",
+                "probeRequestType": "HEAD",
+                "probeProtocol": "Https",
+                "probeIntervalInSeconds": 120
+              },
+              "loadBalancingSettings": {
+                "sampleSize": 4,
+                "successfulSamplesRequired": 3,
+                "additionalLatencyInMilliseconds": 50
+              }
+            }
+          }
+        ],
+        "routingRules": [
+          {
+            "name": "routingRule",
+            "properties": {
+              "acceptedProtocols": ["Https"],
+              "patternsToMatch": ["/*"],
+              "routeConfiguration": {
+                "odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                "backendPool": {
+                  "id": "[concat(resourceId('Microsoft.Cdn/profiles/endpoints', parameters('frontDoorProfileName'), parameters('frontDoorEndpointName')), '/originGroups/originGroup')]"
+                }
+              },
+              "enabledState": "Enabled"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

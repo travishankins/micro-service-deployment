@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appGatewayName": {
+      "value": "myAppGateway"
+    },
+    "subnetResourceId": {
+      "value": "/subscriptions/<subscription-id>/resourceGroups/<resource-group-name>/providers/Microsoft.Network/virtualNetworks/<vnet-name>/subnets/<subnet-name>"
+    },
+    "privateIpAddress": {
+      "value": "10.0.1.4"
+    },
+    "appServiceFqdn": {
+      "value": "my-app-service.azurewebsites.net"
+    },
+    "sslCertificateData": {
+      "value": "<base64-encoded-ssl-cert>"
+    },
+    "sslCertificatePassword": {
+      "value": "<ssl-cert-password>"
+    }
+  }
+}
