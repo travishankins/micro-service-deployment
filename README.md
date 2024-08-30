@@ -9,6 +9,14 @@ This repository contains the ARM templates and related infrastructure-as-code (I
 
 ## Architecture
 
+
+
+### Architecture Diagram
+
+This diagram illustrates the architecture of the microservices-based application.
+
+![Architecture Diagram](./images/diagram.png)
+
 ### Components
 
 - **Function App**: Serves as the entry point for the application, processing HTTP requests, queue messages, and other triggers.
