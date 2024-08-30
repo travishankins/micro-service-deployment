@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Storage Account."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "sku": {
+        "name": "Standard_GZRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot",
+        "supportsHttpsTrafficOnly": true,
+        "isVersioningEnabled": true
+      }
+    }
+  ]
+}

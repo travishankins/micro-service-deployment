@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the SQL Server instance."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The administrator username for the SQL Server."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The administrator password for the SQL Server."
+      }
+    },
+    "databaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the database to be created."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[parameters('sqlServerName')]",
+      "location": "East US",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('adminUsername')]",
+        "administratorLoginPassword": "[parameters('adminPassword')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[concat(parameters('sqlServerName'), '/', parameters('databaseName'))]",
+      "location": "East US",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 21474836480
+      },
+      "sku": {
+        "name": "GP_Gen5_4",
+        "tier": "GeneralPurpose",
+        "capacity": 4,
+        "family": "Gen5"
+      },
+      "dependsOn": ["[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "redisCacheName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Redis Cache instance."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Cache/Redis",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('redisCacheName')]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "sku": {
+          "name": "Premium",
+          "family": "P",
+          "capacity": 2
+        },
+        "enableNonSslPort": false,
+        "minimumTlsVersion": "1.2",
+        "redisConfiguration": {
+          "maxmemory-policy": "allkeys-lru"
+        }
+      }
+    }
+  ]
+}

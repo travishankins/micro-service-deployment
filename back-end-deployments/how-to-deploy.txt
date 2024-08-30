@@ -1,0 +1,5 @@
+az deployment group create \
+  --name "FrontDeployment" \
+  --resource-group "myResourceGroup" \
+  --template-file "./app-service-template.json" \
+  --parameters "./app-service-parameters.json"

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceBusNamespaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Service Bus Namespace."
+      }
+    },
+    "queueName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Service Bus Queue."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2018-01-01-preview",
+      "location": "West US 3",
+      "name": "[parameters('serviceBusNamespaceName')]",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "sku": {
+        "name": "Premium"
+      },
+      "properties": {
+        "zoneRedundant": false
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2018-01-01-preview",
+      "name": "[concat(parameters('serviceBusNamespaceName'), '/', parameters('queueName'))]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+      ],
+      "properties": {
+        "defaultMessageTimeToLive": "P7D",
+        "deadLetteringOnMessageExpiration": true,
+        "autoDeleteOnIdle": "P30D",
+        "maxDeliveryCount": 10,
+        "lockDuration": "PT5M",
+        "enableBatchedOperations": true
+      }
+    }
+  ]
+}

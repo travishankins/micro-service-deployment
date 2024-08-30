@@ -1,0 +1,91 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service Plan to host the Function App."
+      }
+    },
+    "functionAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Function App."
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Storage Account where the function package is located."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2020-12-01",
+      "name": "[parameters('appServicePlanName')]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "sku": {
+        "name": "EP1",
+        "tier": "Premium",
+        "capacity": 1
+      },
+      "properties": {
+        "reserved": true,
+        "targetWorkerCount": 1
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2020-12-01",
+      "name": "[parameters('functionAppName')]",
+      "location": "West US 3",
+      "tags": {
+        "Application": "Cloud Applications",
+        "Creator": "Infrastructure",
+        "Environment": "DevTest",
+        "Requestor": "Enterprise Architecture"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/packages/myfunctionpackage.zip')]"
+            },
+            {
+              "name": "EnqueueFileProcessingFunction_TRIGGER",
+              "value": "HTTP"
+            },
+            {
+              "name": "ProcessFileFunction_TRIGGER",
+              "value": "QUEUE"
+            },
+            {
+              "name": "SearchFilesFunction_TRIGGER",
+              "value": "HTTP"
+            },
+            {
+              "name": "RetrieveFileFunction_TRIGGER",
+              "value": "HTTP"
+            }
+          ]
+        }
+      },
+      "dependsOn": ["[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"]
+    }
+  ]
+}
