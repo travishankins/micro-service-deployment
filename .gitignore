@@ -1,0 +1,81 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon files
+Icon?
+._*
+
+# Thumbnails
+._.DS_Store
+._*.swp
+
+# macOS Finder directory attributes
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+
+# macOS Finder resource fork files
+.AppleDouble
+**/.AppleDouble
+
+# macOS Quick Look files
+**/.qlgenerator
+**/__MACOSX/
+
+# macOS metadata files
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.DS_Store
+._*
+
+# Vim temporary files
+*.swp
+*.swo
+
+# Python related files
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Node.js related files
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Compiled files
+*.class
+*.o
+*.so
+*.obj
+
+# Application specific
+.env
+.env.local
+.env.*.local
+.envrc
+
+# macOS metadata files
+.DS_Store
+
