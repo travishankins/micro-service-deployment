@@ -6,19 +6,25 @@
       "value": "myAppGateway"
     },
     "subnetResourceId": {
-      "value": "/subscriptions/<subscription-id>/resourceGroups/<resource-group-name>/providers/Microsoft.Network/virtualNetworks/<vnet-name>/subnets/<subnet-name>"
+      "value": "/subscriptions/ba059e8a-0464-437b-8740-38688fc2beae/resourceGroups/Front-RG01/providers/Microsoft.Network/virtualNetworks/Front-vNET01/subnets/default"
     },
     "privateIpAddress": {
-      "value": "10.0.1.4"
+      "value": "10.0.0.4"
     },
     "appServiceFqdn": {
-      "value": "my-app-service.azurewebsites.net"
+      "value": "front-dev-deploy.azurewebsites.net"
     },
     "sslCertificateData": {
-      "value": "<base64-encoded-ssl-cert>"
+      "value": "<base-64-string>"
     },
     "sslCertificatePassword": {
-      "value": "<ssl-cert-password>"
+      "value": "<SSL cert password>"
+    },
+    "publicIpName": {
+      "value": "myAppGatewayPublicIP"
+    },
+    "publicIpAllocationMethod": {
+      "value": "Static"
     }
   }
 }

@@ -2,14 +2,11 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "frontDoorProfileName": {
+    "frontDoorName": {
       "value": "myFrontDoorProfile"
     },
-    "frontDoorEndpointName": {
-      "value": "myFrontDoorEndpoint"
-    },
-    "nvaPrivateIp": {
-      "value": "10.0.0.5"
+    "backendAddress": {
+      "value": "<FQDN or Public IP>"
     }
   }
 }

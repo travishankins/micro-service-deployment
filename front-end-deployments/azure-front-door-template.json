@@ -2,109 +2,102 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "frontDoorProfileName": {
+    "frontDoorName": {
       "type": "string",
       "metadata": {
-        "description": "The name of the Front Door profile."
+        "description": "The name of the frontdoor resource."
       }
     },
-    "frontDoorEndpointName": {
+    "backendAddress": {
       "type": "string",
       "metadata": {
-        "description": "The name of the Front Door endpoint."
-      }
-    },
-    "nvaPrivateIp": {
-      "type": "string",
-      "metadata": {
-        "description": "The private IP address or hostname of the Network Virtual Appliance (NVA)."
+        "description": "The hostname of the backend. Must be an IP address or FQDN."
       }
     }
   },
+  "variables": {
+    "frontEndEndpointName": "frontEndEndpoint",
+    "loadBalancingSettingsName": "loadBalancingSettings",
+    "healthProbeSettingsName": "healthProbeSettings",
+    "routingRuleName": "routingRule",
+    "backendPoolName": "backendPool"
+  },
   "resources": [
     {
-      "type": "Microsoft.Cdn/profiles",
-      "apiVersion": "2020-09-01",
-      "name": "[parameters('frontDoorProfileName')]",
+      "type": "Microsoft.Network/frontDoors",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('frontDoorName')]",
       "location": "global",
-      "tags": {
-        "Application": "Cloud Applications",
-        "Creator": "Infrastructure",
-        "Environment": "DevTest",
-        "Requestor": "Enterprise Architecture"
-      },
       "properties": {
-        "sku": {
-          "name": "Standard_AzureFrontDoor"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Cdn/profiles/endpoints",
-      "apiVersion": "2020-09-01",
-      "name": "[concat(parameters('frontDoorProfileName'), '/', parameters('frontDoorEndpointName'))]",
-      "location": "global",
-      "tags": {
-        "Application": "Cloud Applications",
-        "Creator": "Infrastructure",
-        "Environment": "DevTest",
-        "Requestor": "Enterprise Architecture"
-      },
-      "properties": {
-        "origins": [
+        "enabledState": "Enabled",
+        "frontendEndpoints": [
           {
-            "name": "nvaOrigin",
+            "name": "[variables('frontEndEndpointName')]",
             "properties": {
-              "hostName": "[parameters('nvaPrivateIp')]",
-              "httpPort": 80,
-              "httpsPort": 443,
-              "priority": 1,
-              "weight": 50,
-              "enabledState": "Enabled"
+              "hostName": "[format('{0}.azurefd.net', parameters('frontDoorName'))]",
+              "sessionAffinityEnabledState": "Disabled"
             }
           }
         ],
-        "originGroups": [
+        "loadBalancingSettings": [
           {
-            "name": "originGroup",
+            "name": "[variables('loadBalancingSettingsName')]",
             "properties": {
-              "origins": [
+              "sampleSize": 4,
+              "successfulSamplesRequired": 2
+            }
+          }
+        ],
+        "healthProbeSettings": [
+          {
+            "name": "[variables('healthProbeSettingsName')]",
+            "properties": {
+              "path": "/",
+              "protocol": "Http",
+              "intervalInSeconds": 120
+            }
+          }
+        ],
+        "backendPools": [
+          {
+            "name": "[variables('backendPoolName')]",
+            "properties": {
+              "backends": [
                 {
-                  "name": "nvaOrigin",
-                  "properties": {
-                    "hostName": "[parameters('nvaPrivateIp')]",
-                    "httpPort": 80,
-                    "httpsPort": 443,
-                    "priority": 1,
-                    "weight": 50,
-                    "enabledState": "Enabled"
-                  }
+                  "address": "[parameters('backendAddress')]",
+                  "backendHostHeader": "[parameters('backendAddress')]",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "weight": 50,
+                  "priority": 1,
+                  "enabledState": "Enabled"
                 }
               ],
-              "healthProbeSettings": {
-                "probePath": "/",
-                "probeRequestType": "HEAD",
-                "probeProtocol": "Https",
-                "probeIntervalInSeconds": 120
-              },
               "loadBalancingSettings": {
-                "sampleSize": 4,
-                "successfulSamplesRequired": 3,
-                "additionalLatencyInMilliseconds": 50
+                "id": "[resourceId('Microsoft.Network/frontDoors/loadBalancingSettings', parameters('frontDoorName'), variables('loadBalancingSettingsName'))]"
+              },
+              "healthProbeSettings": {
+                "id": "[resourceId('Microsoft.Network/frontDoors/healthProbeSettings', parameters('frontDoorName'), variables('healthProbeSettingsName'))]"
               }
             }
           }
         ],
         "routingRules": [
           {
-            "name": "routingRule",
+            "name": "[variables('routingRuleName')]",
             "properties": {
-              "acceptedProtocols": ["Https"],
+              "frontendEndpoints": [
+                {
+                  "id": "[resourceId('Microsoft.Network/frontDoors/frontEndEndpoints', parameters('frontDoorName'), variables('frontEndEndpointName'))]"
+                }
+              ],
+              "acceptedProtocols": ["Http", "Https"],
               "patternsToMatch": ["/*"],
               "routeConfiguration": {
-                "odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                "forwardingProtocol": "MatchRequest",
                 "backendPool": {
-                  "id": "[concat(resourceId('Microsoft.Cdn/profiles/endpoints', parameters('frontDoorProfileName'), parameters('frontDoorEndpointName')), '/originGroups/originGroup')]"
+                  "id": "[resourceId('Microsoft.Network/frontDoors/backEndPools', parameters('frontDoorName'), variables('backendPoolName'))]"
                 }
               },
               "enabledState": "Enabled"
@@ -113,5 +106,19 @@
         ]
       }
     }
-  ]
+  ],
+  "outputs": {
+    "name": {
+      "type": "string",
+      "value": "[parameters('frontDoorName')]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[resourceGroup().name]"
+    },
+    "resourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/frontDoors', parameters('frontDoorName'))]"
+    }
+  }
 }

@@ -37,9 +37,35 @@
       "metadata": {
         "description": "The password for the SSL certificate."
       }
+    },
+    "publicIpName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Public IP address resource."
+      }
+    },
+    "publicIpAllocationMethod": {
+      "type": "string",
+      "defaultValue": "Static",
+      "allowedValues": ["Static", "Dynamic"],
+      "metadata": {
+        "description": "The allocation method for the Public IP address (Static or Dynamic)."
+      }
     }
   },
   "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2020-11-01",
+      "name": "[parameters('publicIpName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "[parameters('publicIpAllocationMethod')]"
+      },
+      "sku": {
+        "name": "Standard"
+      }
+    },
     {
       "type": "Microsoft.Network/applicationGateways",
       "apiVersion": "2020-11-01",
@@ -55,7 +81,7 @@
         "sku": {
           "name": "WAF_v2",
           "tier": "WAF_v2",
-          "capacity": 2
+          "capacity": 1
         },
         "gatewayIPConfigurations": [
           {
@@ -75,6 +101,14 @@
               "privateIPAddress": "[parameters('privateIpAddress')]",
               "subnet": {
                 "id": "[parameters('subnetResourceId')]"
+              }
+            }
+          },
+          {
+            "name": "appGatewayPublicIp",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]"
               }
             }
           }
@@ -137,12 +171,23 @@
             }
           }
         ],
-        "webApplicationFirewallConfiguration": {
-          "enabled": true,
-          "firewallMode": "Prevention",
-          "ruleSetType": "OWASP",
-          "ruleSetVersion": "3.2"
-        }
+        "requestRoutingRules": [
+          {
+            "name": "appGatewayRoutingRule",
+            "properties": {
+              "ruleType": "Basic",
+              "httpListener": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('appGatewayName'), 'appGatewayHttpsListener')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('appGatewayName'), 'appGatewayBackendPool')]"
+              },
+              "backendHttpSettings": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('appGatewayName'), 'appGatewayBackendHttpSettings')]"
+              }
+            }
+          }
+        ]
       }
     }
   ]
